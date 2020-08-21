@@ -1,0 +1,3 @@
+V0.2 
+-change currency format (format rupiah)
+-add comma after 2 digits
