@@ -3,4 +3,4 @@ V0.2
 -add comma after 2 digits
 
 V0.3
--change the codingan to be flexible (electricity cost)
+-change the codingan to be flexible => (electricity cost)

@@ -73,7 +73,7 @@ const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
 
       const modifiedRoomEnergyUsages = _.map(
         roomEnergyUsages,
-      (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
+        (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
       );
 
       const totalElectricityCost = _.sumBy(modifiedRoomEnergyUsages , 'cost');
