@@ -18,8 +18,44 @@ const endOfMonth   = moment().endOf('month').format('YYYY-MM-DD');
 // Mneach bot Token = '1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
 const token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA';
 
+const electricityMapper = (obj) => {
+  const currentRoomCost = _.chain(obj)
+    .get('values')
+    .sumBy('1')
+    .value();
+
+  return {
+    location: obj.tags.location,
+    cost: currentRoomCost,
+  }
+}
+
+const mutatorByLocation = {
+  "Yuda's Bedroom": ({ roomUsage, roomUsages }) => {
+    const coffeeShopCost = _.chain(roomUsages)
+      .find({ location: 'Coffee Shop' })
+      .get('cost', 0)
+      .value();
+      
+    return {
+      ...roomUsage,
+      cost: roomUsage.cost - coffeeShopCost,
+    }
+  },
+};
+
+const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
+  const mutator = _.get(mutatorByLocation, roomUsage.location);
+
+  if (mutator) {
+      return mutator({ roomUsage, roomUsages: roomEnergyUsages });
+  }
+
+  return roomUsage;
+}
+
 (async () => {
-    try {
+  try {
     const response = await superagent
       .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
       WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h), "location" fill(0)`)
@@ -32,37 +68,34 @@ const token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA';
           .get('series')
           .value();
       });
+      // console.log(JSON.stringify(response, null, 2));
+      const roomEnergyUsages = _.map(response, electricityMapper);
 
-    var sumElectricityCost = 0;
-    var totalElectricityCost = 0;
-    var sendResultToBot = [];
-    for(var i = 0; i < response.length; i++)
-    {
-      for(var x = 0; x < response[i].values.length; x++)
-      {
-        sumElectricityCost += response[i].values[x][1];
-      }
-      var electricityPaymentList = response[i].tags.location + " : " + currencyFormat.formatRupiah(sumElectricityCost);
-      var totalElectricityCost = totalElectricityCost + sumElectricityCost;
-      sendResultToBot.push(electricityPaymentList);
-  
-      sumElectricityCost = 0;
-    }
-    sendResultToBot.push("Total Cost : " + currencyFormat.formatRupiah(totalElectricityCost));
+      const modifiedRoomEnergyUsages = _.map(
+        roomEnergyUsages,
+      (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
+      );
 
-    console.log(sendResultToBot.join("\n"));
-    //Bot Telegram
-    const bot = new TelegramBot(token , {polling : true});
+      const totalElectricityCost = _.sumBy(modifiedRoomEnergyUsages , 'cost');
 
-    bot.onText(/\/biayalistrik/,function(msg,match){ 
-
-    var chatId = msg.chat.id;
+      const resultInString = _.chain(modifiedRoomEnergyUsages)
+      .map(roomUsage => (`${roomUsage.location}: ${currencyFormat.formatRupiah(roomUsage.cost)}`))
+      .concat(`Total cost: ${currencyFormat.formatRupiah(totalElectricityCost)}`)
+      .join('\n')
+      .value();
     
-    bot.sendMessage(chatId, sendResultToBot.join("\n"));
+      //Bot Telegram
+      const bot = new TelegramBot(token , {polling : true});
 
-    });  
+      bot.onText(/\/biayalistrik/,function(msg){ 
 
-  } catch(error) {
+      var chatId = msg.chat.id;
+    
+      bot.sendMessage(chatId, resultInString);
+
+      });  
+
+    } catch(error) {
       console.log(error.stack || error);
-    }
+      }
   })()
