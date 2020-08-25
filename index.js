@@ -53,8 +53,12 @@ const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
 
   return roomUsage;
 }
+      //Bot Telegram
+const bot = new TelegramBot(token , {polling : true});
 
-(async () => {
+bot.onText(/\/biayalistrik/,function(msg){ 
+
+  (async () => {
   try {
     const response = await superagent
       .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
@@ -83,19 +87,13 @@ const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
       .concat(`Total cost: ${currencyFormat.formatRupiah(totalElectricityCost)}`)
       .join('\n')
       .value();
-    
-      //Bot Telegram
-      const bot = new TelegramBot(token , {polling : true});
-
-      bot.onText(/\/biayalistrik/,function(msg){ 
 
       var chatId = msg.chat.id;
     
       bot.sendMessage(chatId, resultInString);
-
-      });  
-
+      
     } catch(error) {
       console.log(error.stack || error);
       }
   })()
+ }); 

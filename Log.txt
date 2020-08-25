@@ -4,3 +4,6 @@ V0.2
 
 V0.3
 -change the codingan to be flexible => (electricity cost)
+
+V0.4
+-fix time not update when bot get request from telegram
