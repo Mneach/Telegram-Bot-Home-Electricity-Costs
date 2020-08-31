@@ -7,3 +7,6 @@ V0.3
 
 V0.4
 -fix time not update when bot get request from telegram
+
+V0.5
+-Fix Timezone -> Asia/Jakarta

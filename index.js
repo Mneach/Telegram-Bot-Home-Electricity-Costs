@@ -5,18 +5,23 @@ const Bluebird = require('bluebird');
 const _ = require('lodash');
 const superagent = Bluebird.promisifyAll(require('superagent'));
 const moment = require('moment');
+const momentTimezone = require('moment-timezone');
 const currencyFormat = require('./currency format');
 
 Bluebird.config({
     cancellation : true,
 });
 
-const startOfMonth = moment().startOf('month').format('YYYY-MM-DD');
-const endOfMonth   = moment().endOf('month').format('YYYY-MM-DD');
+const startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
+const endOfMonth   = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
+
+console.log(startOfMonth);
+console.log(endOfMonth);
+const oneDay = 10 * 60 * 1000;
 
 // Fams Bot Token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA'
 // Mneach bot Token = '1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
-const token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA';
+const token ='1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
 
 const electricityMapper = (obj) => {
   const currentRoomCost = _.chain(obj)
@@ -89,9 +94,16 @@ bot.onText(/\/biayalistrik/,function(msg){
       .value();
 
       var chatId = msg.chat.id;
-    
+      var fromId = msg.from.id;
+      console.log(fromId);
       bot.sendMessage(chatId, resultInString);
       
+      if(fromId) {
+        setInterval(() => {
+          bot.sendMessage(fromId, resultInString);
+          },oneDay); 
+        }
+
     } catch(error) {
       console.log(error.stack || error);
       }
