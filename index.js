@@ -67,7 +67,7 @@ bot.onText(/\/biayalistrik/,function(msg){
   try {
     const response = await superagent
       .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
-      WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h), "location" fill(0)`)
+      WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h) , "location" fill(0) tz('Asia/Jakarta')`)
       .set('Accept', 'application/json')
       .endAsync()
       .then(response => {
@@ -77,7 +77,7 @@ bot.onText(/\/biayalistrik/,function(msg){
           .get('series')
           .value();
       });
-      // console.log(JSON.stringify(response, null, 2));
+      console.log(JSON.stringify(response, null, 2));
       const roomEnergyUsages = _.map(response, electricityMapper);
 
       const modifiedRoomEnergyUsages = _.map(

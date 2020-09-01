@@ -10,3 +10,6 @@ V0.4
 
 V0.5
 -Fix Timezone -> Asia/Jakarta
+
+V0.6
+-Fix Timezone in Query 
