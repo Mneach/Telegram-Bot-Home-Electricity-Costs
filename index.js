@@ -7,6 +7,7 @@ const superagent = Bluebird.promisifyAll(require('superagent'));
 const moment = require('moment');
 const momentTimezone = require('moment-timezone');
 const currencyFormat = require('./currency format');
+const cron = require('node-cron');
 
 Bluebird.config({
     cancellation : true,
@@ -15,13 +16,12 @@ Bluebird.config({
 const startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
 const endOfMonth   = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
 
-console.log(startOfMonth);
-console.log(endOfMonth);
-const oneDay = 10 * 60 * 1000;
-
+//yuda chatId = 812950714;
+//grup fams chatId = -367960999; 
 // Fams Bot Token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA'
 // Mneach bot Token = '1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
-const token ='1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
+const token ='1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA';
+const chatId = -367960999;
 
 const electricityMapper = (obj) => {
   const currentRoomCost = _.chain(obj)
@@ -77,7 +77,6 @@ bot.onText(/\/biayalistrik/,function(msg){
           .get('series')
           .value();
       });
-      console.log(JSON.stringify(response, null, 2));
       const roomEnergyUsages = _.map(response, electricityMapper);
 
       const modifiedRoomEnergyUsages = _.map(
@@ -94,18 +93,52 @@ bot.onText(/\/biayalistrik/,function(msg){
       .value();
 
       var chatId = msg.chat.id;
-      var fromId = msg.from.id;
-      console.log(fromId);
+      console.log(chatId);
       bot.sendMessage(chatId, resultInString);
       
-      if(fromId) {
-        setInterval(() => {
-          bot.sendMessage(fromId, resultInString);
-          },oneDay); 
-        }
-
     } catch(error) {
       console.log(error.stack || error);
       }
   })()
- }); 
+ })
+ 
+ cron.schedule('00 00 * * *', () => {
+  
+  (async () => {
+  try {
+    const response = await superagent
+      .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
+      WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h) , "location" fill(0) tz('Asia/Jakarta')`)
+      .set('Accept', 'application/json')
+      .endAsync()
+      .then(response => {
+        return _.chain(response)
+          .get('body.results')
+          .first()
+          .get('series')
+          .value();
+      });
+      const roomEnergyUsages = _.map(response, electricityMapper);
+
+      const modifiedRoomEnergyUsages = _.map(
+        roomEnergyUsages,
+        (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
+      );
+
+      const totalElectricityCost = _.sumBy(modifiedRoomEnergyUsages , 'cost');
+
+      const resultInString = _.chain(modifiedRoomEnergyUsages)
+      .map(roomUsage => (`${roomUsage.location}: ${currencyFormat.formatRupiah(roomUsage.cost)}`))
+      .concat(`Total cost: ${currencyFormat.formatRupiah(totalElectricityCost)}`)
+      .join('\n')
+      .value();
+
+      bot.sendMessage(chatId, resultInString);
+      
+    } catch(error) {
+      console.log(error.stack || error);
+      }
+  })()
+  } , {
+   timezone : 'Asia/Jakarta'
+ });
