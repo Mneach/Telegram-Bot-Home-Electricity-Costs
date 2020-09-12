@@ -22,10 +22,22 @@ exports.help = () => {
 /biayalistrik -> request for check electricity cost until now (from first date of month)
 
 /biayalistrik-tanggal -> request for check electricity cost by date
-example input : /biayalistrik-tanggal 12-17
+example input : /biayalistrik_tanggal 12-17
 
 /biayalistrik-bulan -> request for check electricity cost by month
-example input : /biayalistrik-bulan januari-oktober`;
+example input : /biayalistrik_bulan januari-oktober`;
+
+    return message;
+}
+
+exports.exampleInputDateRequest = () => {
+    var message = `example input : /biayalistrik_tanggal 12-17`
+
+    return message;
+}
+
+exports.exampleInputMonthRequest = () => {
+    var message = `example input : /biayalistrik_bulan januari-oktober`
 
     return message;
 }
@@ -36,7 +48,7 @@ rules :
 first date < last date
 input date range must be between 1-31
     
-example input : /biayalistrik-tanggal 12-17`;
+example input : /biayalistrik_tanggal 12-17`;
 
     return message;
 };
@@ -47,7 +59,7 @@ rules :
 first month < last month
 input must be the name of the month Indonesian 
 
-example input : /biayalistrik-bulan januari-oktober`;
+example input : /biayalistrik_bulan januari-oktober`;
 
     return message;
 };

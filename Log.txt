@@ -6,7 +6,7 @@ V0.2
 -add comma after 2 digits
 
 V0.3
--change the codingan to be flexible => (electricity cost)
+-flexible Coding => (electricity cost)
 
 V0.4
 -fix time not update when bot get request from telegram
@@ -28,3 +28,9 @@ V0.8
 -add command help
 -change from node telegram bot to framework telegraf.js
 -add file for handle Request Data and message
+
+V0.9
+-fix biayalistrik-tanggal request
+-add function for handle date , month , year
+-flexible coding -> (request biayalistrik-tanggal , request biayalistrik-bulan)
+-add new message for (request biayalistrik-tanggal , request biayalistrik-bulan)

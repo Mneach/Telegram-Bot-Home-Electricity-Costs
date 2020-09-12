@@ -9,7 +9,7 @@ const momentTimezone = require('moment-timezone');
 const cron = require('node-cron');
 const message = require('./message');
 const requestData = require('./requestData');
-const Telegraf  = require('telegraf');
+const Telegraf = require('telegraf');
 
 Bluebird.config({
   cancellation: true,
@@ -27,7 +27,15 @@ bot.hears('/biayalistrik', (ctx) => {
   dataFromDB.then((data) => ctx.reply(data));
 });
 
-bot.hears(/\/biayalistrik-tanggal (.+)/g, (ctx) => {
+bot.hears('/biayalistrik_tanggal', (ctx) => {
+  ctx.reply(message.exampleInputDateRequest());
+});
+
+bot.hears('/biayalistrik_bulan', (ctx) => {
+  ctx.reply(message.exampleInputMonthRequest());
+});
+
+bot.hears(/\/biayalistrik_tanggal (.+)/g, (ctx) => {
 
   const dateRange = ctx.match[1];
 
@@ -43,20 +51,19 @@ bot.hears(/\/biayalistrik-tanggal (.+)/g, (ctx) => {
     return typeof (data) == 'number' && data > 0 && data < 32;
   });
 
-
   if (_.isEmpty(filterNumber) || filterNumber.length > 2 || filterNumber[0] > filterNumber[1]) {
     ctx.reply(message.errorInputDateRange())
   } else {
+    
+    var firstDate;
+    var endDate;
 
     var firstDate = filterNumber[0].toString();
-    var endDate = filterNumber[1].toString();
 
-    if (firstDate.length == 1) {
-      firstDate = "0" + firstDate;
-    }
-
-    if (endDate.length == 1) {
-      endDate = "0" + endDate;
+    if (filterNumber.length == 1) {
+      var endDate = filterNumber[0].toString();
+    } else {
+      var endDate = filterNumber[1].toString();
     }
 
     var dataFromDB = requestData.requestDataElectricityCost(requestData.startOfDate(firstDate), requestData.endOfDate(endDate));
@@ -64,7 +71,7 @@ bot.hears(/\/biayalistrik-tanggal (.+)/g, (ctx) => {
   }
 });
 
-bot.hears(/\/biayalistrik-bulan (.+)/, (ctx) => {
+bot.hears(/\/biayalistrik_bulan (.+)/, (ctx) => {
 
   var monthRange = ctx.match[1];
   var splitMonthRange = monthRange.split('-');
@@ -78,17 +85,21 @@ bot.hears(/\/biayalistrik-bulan (.+)/, (ctx) => {
     return output
   });
 
-  var compact = _.compact(mapInput);
+  var resultMonthRange = _.compact(mapInput);
 
-  if (mapInput.length > 2 || _.isEmpty(compact) || splitMonthRange.length !== compact.length) {
+  if (mapInput.length > 2 || _.isEmpty(resultMonthRange) || splitMonthRange.length !== resultMonthRange.length) {
     ctx.reply(message.errorInputMonthRange());
   } else {
-    if (compact.length === 1) {
-      var starDate = moment([2020, compact[0] - 1]).startOf('month').format('YYYY-MM-DD');
-      var endDate = moment([2020, compact[0] - 1]).endOf('month').format('YYYY-MM-DD');
+    
+    var starDate;
+    var endDate;
+
+    starDate = requestData.StartDateOfMonth(resultMonthRange[0]);
+
+    if (resultMonthRange.length === 1) {
+      endDate = requestData.endDateOfMonth(resultMonthRange[0]);
     } else {
-      var starDate = moment([2020, compact[0] - 1]).startOf('month').format('YYYY-MM-DD');
-      var endDate = moment([2020, compact[1] - 1]).endOf('month').format('YYYY-MM-DD');
+      endDate = requestData.endDateOfMonth(resultMonthRange[1]);
     }
     let dataFromDB = requestData.requestDataElectricityCost(starDate, endDate);
     dataFromDB.then((data) => ctx.reply(data));
@@ -105,9 +116,18 @@ bot.hears(/\/version/, (ctx) => {
 
 
 cron.schedule('00 00 * * *', () => {
-
   var dataFromDB = requestData.requestDataElectricityCost(requestData.startOfMonth, requestData.endOfMonth);
   dataFromDB.then((data) => bot.telegram.sendMessage(requestData.CHATID_GROUP_FAMS,data));
+
+}, {
+  timezone: 'Asia/Jakarta'
+});
+
+cron.schedule('01 00 * * *', () => {
+
+  var dataFromDB = requestData.requestDataElectricityCost(requestData.subtractOneDay, requestData.endOfMonth);
+  dataFromDB.then((data) => bot.telegram.sendMessage(requestData.CHATID_GROUP_FAMS,`*ELECTRICITY COST YESTERDAY*
+${data}`));
 
 }, {
   timezone: 'Asia/Jakarta'

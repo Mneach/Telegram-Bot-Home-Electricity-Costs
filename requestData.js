@@ -16,17 +16,34 @@ const CHATID_GROUP_FAMS = process.env.CHATID_GROUP_FAMS;
 const TOKEN_FAMS = process.env.TOKEN_FAMS;
 
 //MOMENT JS
+var getYear = moment().year();
+var getMonth = moment().month();
+var getDay = moment().get('date');
 module.exports.startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
 module.exports.endOfMonth = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
+
+module.exports.addOneDay = moment([getYear, getMonth, getDay]).add(1, 'days').format('YYYY-MM-DD')
+module.exports.subtractOneDay = moment([getYear, getMonth, getDay]).subtract(1, 'days').format('YYYY-MM-DD')
+
 module.exports.startOfDate = (firstDate) => {
-  var date = moment([moment().year(), moment().month(), firstDate]).format('YYYY-MM-DD');
-  return date;
-};
-module.exports.endOfDate = (endDate) => {
-  var date = moment([moment().year(), moment().month(), endDate]).add(1, 'days').format('YYYY-MM-DD')
+  var date = moment([getYear, getMonth, firstDate]).format('YYYY-MM-DD');
   return date;
 };
 
+module.exports.endOfDate = (endDate) => {
+  var date = moment([getYear, getMonth, endDate]).add(1, 'days').format('YYYY-MM-DD')
+  return date;
+};
+
+module.exports.StartDateOfMonth = (month) => {
+  var date = moment([getYear, month - 1]).startOf('month').format('YYYY-MM-DD');
+  return date;
+}
+
+module.exports.endDateOfMonth = (month) => {
+  var date = moment([getYear, month - 1]).endOf('month').format('YYYY-MM-DD');
+  return date
+}
 
 //REQUST DATA FOR ELECTRICITY COST
 const electricityMapper = (obj) => {
