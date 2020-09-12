@@ -1,3 +1,6 @@
+V0.1
+-add total of electricity cost
+
 V0.2 
 -change currency format (format rupiah)
 -add comma after 2 digits
@@ -14,5 +17,14 @@ V0.5
 V0.6
 -Fix Timezone in Query
 
-v0.7
+V0.7
 -add cronjob for send electricity cost every day change
+
+V0.8
+-add command version
+-add command log 
+-add command biayalistrik-tanggal
+-add command biayalistrik-bulan
+-add command help
+-change from node telegram bot to framework telegraf.js
+-add file for handle Request Data and message

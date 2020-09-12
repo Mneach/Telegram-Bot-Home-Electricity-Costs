@@ -1,144 +1,116 @@
 process.env["NTBA_FIX_319"] = 1;
 
+require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const Bluebird = require('bluebird');
 const _ = require('lodash');
-const superagent = Bluebird.promisifyAll(require('superagent'));
 const moment = require('moment');
 const momentTimezone = require('moment-timezone');
-const currencyFormat = require('./currency format');
 const cron = require('node-cron');
+const message = require('./message');
+const requestData = require('./requestData');
+const Telegraf  = require('telegraf');
 
 Bluebird.config({
-    cancellation : true,
+  cancellation: true,
 });
 
-const startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
-const endOfMonth   = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
+const bot = new Telegraf(requestData.TOKEN_FAMS);
 
-//yuda chatId = 812950714;
-//grup fams chatId = -367960999; 
-// Fams Bot Token = '1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA'
-// Mneach bot Token = '1208385308:AAHWfx0KuGvCobXwIhx9xs2Wvg2-Tp5nDDQ';
-const token ='1262884841:AAFowIrtxd0WbNjn2sQQWocfnPe8l2rw_oA';
-const chatId = -367960999;
+bot.help((ctx) => {
+  ctx.reply(message.help());
+});
 
-const electricityMapper = (obj) => {
-  const currentRoomCost = _.chain(obj)
-    .get('values')
-    .sumBy('1')
-    .value();
+bot.hears('/biayalistrik', (ctx) => {
 
-  return {
-    location: obj.tags.location,
-    cost: currentRoomCost,
-  }
-}
+  const dataFromDB = requestData.requestDataElectricityCost(requestData.startOfMonth, requestData.endOfMonth);
+  dataFromDB.then((data) => ctx.reply(data));
+});
 
-const mutatorByLocation = {
-  "Yuda's Bedroom": ({ roomUsage, roomUsages }) => {
-    const coffeeShopCost = _.chain(roomUsages)
-      .find({ location: 'Coffee Shop' })
-      .get('cost', 0)
-      .value();
-      
-    return {
-      ...roomUsage,
-      cost: roomUsage.cost - coffeeShopCost,
+bot.hears(/\/biayalistrik-tanggal (.+)/g, (ctx) => {
+
+  const dateRange = ctx.match[1];
+
+  var splitDateRange = dateRange.split("-");
+
+  var mapSplitDateRange = _.map(splitDateRange, (obj) => {
+    let checkNumber = Number(obj);
+
+    return checkNumber === 0 ? checkNumber : checkNumber || obj;
+  });
+
+  var filterNumber = _.filter(mapSplitDateRange, (data) => {
+    return typeof (data) == 'number' && data > 0 && data < 32;
+  });
+
+
+  if (_.isEmpty(filterNumber) || filterNumber.length > 2 || filterNumber[0] > filterNumber[1]) {
+    ctx.reply(message.errorInputDateRange())
+  } else {
+
+    var firstDate = filterNumber[0].toString();
+    var endDate = filterNumber[1].toString();
+
+    if (firstDate.length == 1) {
+      firstDate = "0" + firstDate;
     }
-  },
-};
 
-const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
-  const mutator = _.get(mutatorByLocation, roomUsage.location);
+    if (endDate.length == 1) {
+      endDate = "0" + endDate;
+    }
 
-  if (mutator) {
-      return mutator({ roomUsage, roomUsages: roomEnergyUsages });
+    var dataFromDB = requestData.requestDataElectricityCost(requestData.startOfDate(firstDate), requestData.endOfDate(endDate));
+    dataFromDB.then((data) => ctx.reply(data));
   }
+});
 
-  return roomUsage;
-}
-      //Bot Telegram
-const bot = new TelegramBot(token , {polling : true});
+bot.hears(/\/biayalistrik-bulan (.+)/, (ctx) => {
 
-bot.onText(/\/biayalistrik/,function(msg){ 
+  var monthRange = ctx.match[1];
+  var splitMonthRange = monthRange.split('-');
 
-  (async () => {
-  try {
-    const response = await superagent
-      .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
-      WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h) , "location" fill(0) tz('Asia/Jakarta')`)
-      .set('Accept', 'application/json')
-      .endAsync()
-      .then(response => {
-        return _.chain(response)
-          .get('body.results')
-          .first()
-          .get('series')
-          .value();
-      });
-      const roomEnergyUsages = _.map(response, electricityMapper);
-
-      const modifiedRoomEnergyUsages = _.map(
-        roomEnergyUsages,
-        (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
-      );
-
-      const totalElectricityCost = _.sumBy(modifiedRoomEnergyUsages , 'cost');
-
-      const resultInString = _.chain(modifiedRoomEnergyUsages)
-      .map(roomUsage => (`${roomUsage.location}: ${currencyFormat.formatRupiah(roomUsage.cost)}`))
-      .concat(`Total cost: ${currencyFormat.formatRupiah(totalElectricityCost)}`)
-      .join('\n')
+  var mapInput = _.map(splitMonthRange, (obj) => {
+    var output = _.chain(requestData.indoMonthName)
+      .find({ 'month': obj })
+      .get('numberOfMonth', 0)
       .value();
 
-      var chatId = msg.chat.id;
-      console.log(chatId);
-      bot.sendMessage(chatId, resultInString);
-      
-    } catch(error) {
-      console.log(error.stack || error);
-      }
-  })()
- })
- 
- cron.schedule('00 00 * * *', () => {
-  
-  (async () => {
-  try {
-    const response = await superagent
-      .get(`http://192.168.1.200:8086/query?pretty=true&db=home&q=SELECT mean("usage")/1000 * 1500 FROM "electricity" 
-      WHERE time >='${startOfMonth}' AND time <= '${endOfMonth}' GROUP BY time(1h) , "location" fill(0) tz('Asia/Jakarta')`)
-      .set('Accept', 'application/json')
-      .endAsync()
-      .then(response => {
-        return _.chain(response)
-          .get('body.results')
-          .first()
-          .get('series')
-          .value();
-      });
-      const roomEnergyUsages = _.map(response, electricityMapper);
+    return output
+  });
 
-      const modifiedRoomEnergyUsages = _.map(
-        roomEnergyUsages,
-        (roomUsage) => mutateUsageByLocation({ roomUsage, roomEnergyUsages })
-      );
+  var compact = _.compact(mapInput);
 
-      const totalElectricityCost = _.sumBy(modifiedRoomEnergyUsages , 'cost');
+  if (mapInput.length > 2 || _.isEmpty(compact) || splitMonthRange.length !== compact.length) {
+    ctx.reply(message.errorInputMonthRange());
+  } else {
+    if (compact.length === 1) {
+      var starDate = moment([2020, compact[0] - 1]).startOf('month').format('YYYY-MM-DD');
+      var endDate = moment([2020, compact[0] - 1]).endOf('month').format('YYYY-MM-DD');
+    } else {
+      var starDate = moment([2020, compact[0] - 1]).startOf('month').format('YYYY-MM-DD');
+      var endDate = moment([2020, compact[1] - 1]).endOf('month').format('YYYY-MM-DD');
+    }
+    let dataFromDB = requestData.requestDataElectricityCost(starDate, endDate);
+    dataFromDB.then((data) => ctx.reply(data));
+  }
+});
 
-      const resultInString = _.chain(modifiedRoomEnergyUsages)
-      .map(roomUsage => (`${roomUsage.location}: ${currencyFormat.formatRupiah(roomUsage.cost)}`))
-      .concat(`Total cost: ${currencyFormat.formatRupiah(totalElectricityCost)}`)
-      .join('\n')
-      .value();
+bot.hears(/\/log/, (ctx) => {
+  ctx.reply(message.log());
+});
 
-      bot.sendMessage(chatId, resultInString);
-      
-    } catch(error) {
-      console.log(error.stack || error);
-      }
-  })()
-  } , {
-   timezone : 'Asia/Jakarta'
- });
+bot.hears(/\/version/, (ctx) => {
+  ctx.reply(message.version());
+});
+
+
+cron.schedule('00 00 * * *', () => {
+
+  var dataFromDB = requestData.requestDataElectricityCost(requestData.startOfMonth, requestData.endOfMonth);
+  dataFromDB.then((data) => bot.telegram.sendMessage(requestData.CHATID_GROUP_FAMS,data));
+
+}, {
+  timezone: 'Asia/Jakarta'
+});
+
+bot.launch();
