@@ -1,9 +1,12 @@
 const fs = require('fs');
 
 exports.version = () => {
-    var message = "Bot Electrycity Cost Version 0.8";
-
-    return message;
+    try {
+        var data = fs.readFileSync('version.txt', 'utf-8');
+        return data;
+    } catch (e) {
+        return e.stack;
+    }
 }
 
 exports.log = () => {
@@ -21,10 +24,10 @@ exports.help = () => {
 /version -> request for see version bot
 /biayalistrik -> request for check electricity cost until now (from first date of month)
 
-/biayalistrik-tanggal -> request for check electricity cost by date
+/biayalistrik_tanggal -> request for check electricity cost by date
 example input : /biayalistrik_tanggal 12-17
 
-/biayalistrik-bulan -> request for check electricity cost by month
+/biayalistrik_bulan -> request for check electricity cost by month
 example input : /biayalistrik_bulan januari-oktober`;
 
     return message;

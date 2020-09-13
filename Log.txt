@@ -34,3 +34,6 @@ V0.9
 -add function for handle date , month , year
 -flexible coding -> (request biayalistrik-tanggal , request biayalistrik-bulan)
 -add new message for (request biayalistrik-tanggal , request biayalistrik-bulan)
+
+V1.0
+-fix bug request

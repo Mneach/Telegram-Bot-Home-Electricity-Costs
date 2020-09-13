@@ -15,23 +15,23 @@ Bluebird.config({
   cancellation: true,
 });
 
-const bot = new Telegraf(requestData.TOKEN_FAMS);
+const bot = new Telegraf(requestData.TOKEN_MNEACH);
 
 bot.help((ctx) => {
   ctx.reply(message.help());
 });
 
-bot.hears('/biayalistrik', (ctx) => {
+bot.command('/biayalistrik', (ctx) => {
 
   const dataFromDB = requestData.requestDataElectricityCost(requestData.startOfMonth, requestData.endOfMonth);
   dataFromDB.then((data) => ctx.reply(data));
 });
 
-bot.hears('/biayalistrik_tanggal', (ctx) => {
+bot.hears('/biayalistrik_tanggal@Mneach_bot', (ctx) => {
   ctx.reply(message.exampleInputDateRequest());
 });
 
-bot.hears('/biayalistrik_bulan', (ctx) => {
+bot.hears('/biayalistrik_bulan@Mneach_bot', (ctx) => {
   ctx.reply(message.exampleInputMonthRequest());
 });
 
