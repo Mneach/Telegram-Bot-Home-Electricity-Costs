@@ -37,3 +37,7 @@ V0.9
 
 V1.0
 -fix bug request
+
+v1.1
+-fix bug cron schedule for electricity cost yesterday
+-add get time now (message.js)

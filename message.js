@@ -11,7 +11,7 @@ exports.version = () => {
 
 exports.log = () => {
     try {
-        var data = fs.readFileSync('log.txt', 'utf-8');
+        var data = fs.readFileSync('Log.txt', 'utf-8');
         return data;
     } catch (e) {
         return e.stack;

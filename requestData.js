@@ -16,9 +16,10 @@ const CHATID_GROUP_FAMS = process.env.CHATID_GROUP_FAMS;
 const TOKEN_FAMS = process.env.TOKEN_FAMS;
 
 //MOMENT JS
-var getYear = moment().year();
-var getMonth = moment().month();
-var getDay = moment().get('date');
+var getTimeNow = moment().tz("Asia/Jakarta").format('YYYY-MM-DD');
+var getYear = moment().tz("Asia/Jakarta").year();
+var getMonth = moment().tz("Asia/Jakarta").month();
+var getDay = moment().tz("Asia/Jakarta").get('date');
 module.exports.startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
 module.exports.endOfMonth = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
 
@@ -140,3 +141,4 @@ module.exports.TOKEN_MNEACH = TOKEN_MNEACH;
 module.exports.CHATID_YUDA = CHATID_YUDA;
 module.exports.TOKEN_FAMS = TOKEN_FAMS;
 module.exports.CHATID_GROUP_FAMS = CHATID_GROUP_FAMS;
+module.exports.getTimeNow = getTimeNow;

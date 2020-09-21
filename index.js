@@ -123,9 +123,8 @@ cron.schedule('00 00 * * *', () => {
   timezone: 'Asia/Jakarta'
 });
 
-cron.schedule('01 00 * * *', () => {
-
-  var dataFromDB = requestData.requestDataElectricityCost(requestData.subtractOneDay, requestData.endOfMonth);
+cron.schedule('00 00 * * *', () => {
+  var dataFromDB = requestData.requestDataElectricityCost(requestData.subtractOneDay, requestData.getTimeNow);
   dataFromDB.then((data) => bot.telegram.sendMessage(requestData.CHATID_GROUP_FAMS,`*ELECTRICITY COST YESTERDAY*
 ${data}`));
 
