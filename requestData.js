@@ -23,16 +23,16 @@ var getDay = moment().tz("Asia/Jakarta").get('date');
 module.exports.startOfMonth = moment().tz("Asia/Jakarta").startOf('month').format('YYYY-MM-DD');
 module.exports.endOfMonth = moment().tz("Asia/Jakarta").endOf('month').format('YYYY-MM-DD');
 
-module.exports.addOneDay = moment([getYear, getMonth, getDay]).add(1, 'days').format('YYYY-MM-DD')
-module.exports.subtractOneDay = moment([getYear, getMonth, getDay]).subtract(1, 'days').format('YYYY-MM-DD')
+module.exports.addOneDay = moment().add(1, 'days').startOf('day').format('YYYY-MM-DD')
+module.exports.subtractOneDay = moment().subtract(1, 'days').endOf('day').format('YYYY-MM-DD')
 
 module.exports.startOfDate = (firstDate) => {
-  var date = moment([getYear, getMonth, firstDate]).format('YYYY-MM-DD');
+  var date = moment([getYear, getMonth, firstDate]).startOf('day').format('YYYY-MM-DD');
   return date;
 };
 
 module.exports.endOfDate = (endDate) => {
-  var date = moment([getYear, getMonth, endDate]).add(1, 'days').format('YYYY-MM-DD')
+  var date = moment([getYear, getMonth, endDate]).add(1, 'days').endOf('day').format('YYYY-MM-DD')
   return date;
 };
 

@@ -41,3 +41,8 @@ V1.0
 v1.1
 -fix bug cron schedule for electricity cost yesterday
 -add get time now (message.js)
+
+v1.2
+-fix bug cron schedule for electricity cost yesterday
+-fix bug request biayalistrik_tanggal
+-fix bug (message.js)
