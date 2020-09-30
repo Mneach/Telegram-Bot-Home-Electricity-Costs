@@ -124,7 +124,7 @@ cron.schedule('00 00 * * *', () => {
 });
 
 cron.schedule('01 00 * * *', () => {
-  var dataFromDB = requestData.requestDataElectricityCost(requestData.subtractOneDay, requestData.addOneDay);
+  var dataFromDB = requestData.requestDataElectricityCost(requestData.StartOfsubtractOneDay, requestData.EndOfsubtractOneDay);
   dataFromDB.then((data) => bot.telegram.sendMessage(requestData.CHATID_GROUP_FAMS,`*ELECTRICITY COST YESTERDAY*
 ${data}`));
 
