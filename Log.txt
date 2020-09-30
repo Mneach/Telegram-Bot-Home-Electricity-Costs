@@ -46,3 +46,7 @@ v1.2
 -fix bug cron schedule for electricity cost yesterday
 -fix bug request biayalistrik_tanggal
 -fix bug (message.js)
+
+v1.3
+-fix bug cron schedule for electricity cost yesterday 
+-add subtract oneday from start of day to end of day
