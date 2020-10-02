@@ -23,6 +23,7 @@ exports.help = () => {
 /log -> request for see log update
 /version -> request for see version bot
 /biayalistrik -> request for check electricity cost until now (from first date of month)
+/biayalistrik_kemarin -> request for check electricity cost yesterday
 
 /biayalistrik_tanggal -> request for check electricity cost by date
 example input : /biayalistrik_tanggal 12-17

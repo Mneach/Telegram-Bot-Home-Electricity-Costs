@@ -27,6 +27,12 @@ bot.command('/biayalistrik', (ctx) => {
   dataFromDB.then((data) => ctx.reply(data));
 });
 
+bot.command('/biayalistrik_kemarin@Mneach_bot', (ctx) => {  
+
+  var dataFromDB = requestData.requestDataElectricityCost(requestData.StartOfsubtractOneDay, requestData.EndOfsubtractOneDay);
+  dataFromDB.then((data) => ctx.reply(data));
+});
+
 bot.hears('/biayalistrik_tanggal@Mneach_bot', (ctx) => {
   ctx.reply(message.exampleInputDateRequest());
 });

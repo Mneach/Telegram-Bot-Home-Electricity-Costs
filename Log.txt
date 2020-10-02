@@ -50,3 +50,8 @@ v1.2
 v1.3
 -fix bug cron schedule for electricity cost yesterday 
 -add subtract oneday from start of day to end of day
+
+v1.4
+-fix bug cron schedule for electricity cost yesterday
+-change the calculation electricity cost of yuda's bedroom
+-add command biayalistrik_kemarin

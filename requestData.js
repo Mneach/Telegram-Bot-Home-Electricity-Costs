@@ -25,7 +25,7 @@ module.exports.endOfMonth = moment().tz("Asia/Jakarta").endOf('month').format('Y
 
 module.exports.addOneDay = moment().add(1, 'days').startOf('day').format('YYYY-MM-DD');
 module.exports.StartOfsubtractOneDay = moment().subtract(1, 'days').startOf('day').format('YYYY-MM-DD');
-module.exports.EndOfsubtractOneDay = moment().subtract(1, 'days').endOf('day').format('YYYY-MM-DD');
+module.exports.EndOfsubtractOneDay = moment().startOf('day').format('YYYY-MM-DD');
 
 module.exports.startOfDate = (firstDate) => {
   var date = moment([getYear, getMonth, firstDate]).startOf('day').format('YYYY-MM-DD');
@@ -61,25 +61,25 @@ const electricityMapper = (obj) => {
 }
 
 const mutatorByLocation = {
-  "Yuda's Bedroom": ({ roomUsage, roomUsages }) => {
-    const coffeeShopCost = _.chain(roomUsages)
-      .find({ location: 'Coffee Shop' })
-      .get('cost', 0)
-      .value();
+  // "Yuda's Bedroom": ({ roomUsage, roomUsages }) => {
+  //   const coffeeShopCost = _.chain(roomUsages)
+  //     .find({ location: 'Coffee Shop' })
+  //     .get('cost', 0)
+  //     .value();
 
-    return {
-      ...roomUsage,
-      cost: roomUsage.cost - coffeeShopCost,
-    }
-  },
+  //   return {
+  //     ...roomUsage,
+  //     cost: roomUsage.cost - coffeeShopCost,
+  //   }
+  // },
 };
 
 const mutateUsageByLocation = ({ roomUsage, roomEnergyUsages }) => {
-  const mutator = _.get(mutatorByLocation, roomUsage.location);
+  // const mutator = _.get(mutatorByLocation, roomUsage.location);
 
-  if (mutator) {
-    return mutator({ roomUsage, roomUsages: roomEnergyUsages });
-  }
+  // if (mutator) {
+  //   return mutator({ roomUsage, roomUsages: roomEnergyUsages });
+  // }
 
   return roomUsage;
 }
